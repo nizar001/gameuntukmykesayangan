@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tebak Cinta 💖</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    height: 100vh;
+    background: linear-gradient(180deg, #ff758c, #ff7eb3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.game-box {
+    width: 100%;
+    max-width: 400px;
+    height: 100vh;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(15px);
+    border-radius: 25px;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+}
+
+h1 {
+    font-size: 22px;
+    margin-bottom: 20px;
+}
+
+.container {
+    display: none;
+    animation: fade 0.5s;
+}
+
+.active {
+    display: block;
+}
+
+@keyframes fade {
+    from {opacity: 0; transform: scale(0.9);}
+    to {opacity: 1; transform: scale(1);}
+}
+
+h2 {
+    font-size: 18px;
+    margin-bottom: 30px;
+}
+
+button {
+    width: 100%;
+    padding: 14px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 15px;
+    background: linear-gradient(45deg, #ff4d6d, #ff758c);
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    transform: scale(1.05);
+}
+
+/* love animasi */
+.heart {
+    position: absolute;
+    color: pink;
+    animation: float 6s linear infinite;
+    opacity: 0.6;
+}
+
+@keyframes float {
+    0% {transform: translateY(100vh);}
+    100% {transform: translateY(-10vh);}
+}
+
+/* ending love */
+#loveText {
+    font-size: 28px;
+    animation: zoom 1s infinite alternate;
+}
+
+@keyframes zoom {
+    from {transform: scale(1);}
+    to {transform: scale(1.2);}
+}
+</style>
+
+</head>
+<body>
+
+<!-- 🎵 MUSIK -->
+<audio id="bgm" autoplay loop>
+    <source src="musik.mp3" type="audio/mpeg">
+</audio>
+
+<div class="game-box">
+
+<h1>💖 Tebak Cinta 💖</h1>
+
+<!-- SOAL -->
+<div id="q1" class="container active">
+<h2>Apa yang selalu ada di hati tapi tak terlihat?</h2>
+<button onclick="correct()">Cinta</button>
+<button onclick="wrong()">Uang</button>
+</div>
+
+<div id="q2" class="container">
+<h2>Apa yang bikin kamu senyum tiba-tiba?</h2>
+<button onclick="correct()">Kamu</button>
+<button onclick="wrong()">PR</button>
+</div>
+
+<div id="q3" class="container">
+<h2>Apa yang jauh tapi terasa dekat?</h2>
+<button onclick="correct()">Cinta</button>
+<button onclick="wrong()">Gunung</button>
+</div>
+
+<div id="q4" class="container">
+<h2>Apa yang tak bisa dibeli?</h2>
+<button onclick="correct()">Kasih sayang</button>
+<button onclick="wrong()">Sepatu</button>
+</div>
+
+<div id="q5" class="container">
+<h2>Apa yang bikin deg-degan?</h2>
+<button onclick="correct()">Kamu</button>
+<button onclick="wrong()">Guru</button>
+</div>
+
+<div id="q6" class="container">
+<h2>Apa yang selalu dirindukan?</h2>
+<button onclick="correct()">Dia</button>
+<button onclick="wrong()">Alarm</button>
+</div>
+
+<div id="q7" class="container">
+<h2>Apa yang bikin kangen?</h2>
+<button onclick="correct()">Kenangan</button>
+<button onclick="wrong()">Game</button>
+</div>
+
+<div id="q8" class="container">
+<h2>Apa yang bikin bahagia?</h2>
+<button onclick="correct()">Cinta</button>
+<button onclick="wrong()">Dimarahin</button>
+</div>
+
+<div id="q9" class="container">
+<h2>Apa yang sulit dilupakan?</h2>
+<button onclick="correct()">Kamu</button>
+<button onclick="wrong()">Tidur</button>
+</div>
+
+<div id="q10" class="container">
+<h2>Siapa yang spesial?</h2>
+<button onclick="correct()">Kamu ❤️</button>
+<button onclick="wrong()">Teman</button>
+</div>
+
+<!-- END -->
+<div id="qend" class="container">
+<h2 id="loveText">💖 I LOVE YOU saayanggg 💖</h2>
+</div>
+
+</div>
+
+<script>
+let current = 1;
+
+function showPage(num){
+    document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
+    document.getElementById('q'+num).classList.add('active');
+    current = num;
+}
+
+function correct(){
+    if(current < 10){
+        showPage(current + 1);
+    } else {
+        showPage('end');
+
+        // auto balik ke index setelah 4 detik
+        setTimeout(()=>{
+            window.location.href = "index.html";
+        }, 4000);
+    }
+}
+
+function wrong(){
+    alert("Salah 😝 ulang dari awal");
+
+    // getar HP
+    if(navigator.vibrate){
+        navigator.vibrate(300);
+    }
+
+    showPage(1);
+}
+
+/* paksa musik play (biar gak diblok) */
+document.body.addEventListener("click", ()=>{
+    document.getElementById("bgm").play();
+});
+
+/* animasi love */
+for(let i=0;i<15;i++){
+    let h = document.createElement("div");
+    h.innerHTML = "💖";
+    h.className = "heart";
+    h.style.left = Math.random()*100 + "%";
+    h.style.fontSize = (15 + Math.random()*25) + "px";
+    h.style.animationDuration = (4 + Math.random()*4) + "s";
+    document.body.appendChild(h);
+}
+</script>
+
+</body>
+</html>

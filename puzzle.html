@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Block Blast Android 💖</title>
+
+<style>
+body{
+  margin:0;
+  font-family:sans-serif;
+  background:linear-gradient(135deg,#ff9a9e,#fad0c4);
+  overflow:hidden;
+  touch-action:none;
+}
+
+/* TOP BAR */
+.topbar{
+  padding:10px;
+  color:white;
+  text-align:center;
+  font-size:18px;
+}
+
+/* SCORE */
+#score{
+  font-size:20px;
+  font-weight:bold;
+}
+
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(8,1fr);
+  gap:4px;
+  width:92vw;
+  max-width:380px;
+  margin:10px auto;
+}
+
+.cell{
+  aspect-ratio:1;
+  background:white;
+  border-radius:8px;
+}
+
+.filled{
+  background:#ff4d6d;
+}
+
+/* BLOCK AREA */
+.blocks{
+  display:flex;
+  justify-content:center;
+  gap:15px;
+  margin-top:10px;
+}
+
+.block{
+  display:grid;
+  gap:3px;
+}
+
+.block div{
+  width:18px;
+  height:18px;
+  background:#ff4d6d;
+  border-radius:4px;
+}
+
+/* DRAG */
+.dragging{
+  position:fixed;
+  z-index:999;
+  transform:scale(1.2);
+  pointer-events:none;
+}
+
+/* SURAT */
+#letter{
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%) scale(0);
+  background:white;
+  padding:20px;
+  border-radius:15px;
+  text-align:center;
+  transition:0.4s;
+  z-index:9999;
+}
+
+#letter.show{
+  transform:translate(-50%,-50%) scale(1);
+}
+
+button{
+  margin-top:10px;
+  padding:10px;
+  border:none;
+  background:#ff4d6d;
+  color:white;
+  border-radius:10px;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="topbar">
+💖 Block Blast Android 💖
+<div id="score">Score: 0</div>
+</div>
+
+<div id="grid" class="grid"></div>
+<div id="blocks" class="blocks"></div>
+
+<!-- MUSIC -->
+
+<audio id="bgm" loop>
+<source src="https://cdn.pixabay.com/audio/2022/03/15/audio_115b9b9c9b.mp3">
+</audio>
+
+<!-- SURAT -->
+
+<div id="letter">
+<h2>💌 LOVE MESSAGE</h2>
+<p>I LOVE YOU 💖</p>
+<button onclick="goBack()">⬅ Back ke Index</button>
+</div>
+
+<script>
+const gridEl = document.getElementById("grid");
+const blocksEl = document.getElementById("blocks");
+const scoreEl = document.getElementById("score");
+const letter = document.getElementById("letter");
+const bgm = document.getElementById("bgm");
+
+let grid = [];
+let score = 0;
+let dragging = null;
+let shapeData = null;
+
+/* GRID */
+for(let i=0;i<64;i++){
+  let c=document.createElement("div");
+  c.className="cell";
+  gridEl.appendChild(c);
+  grid.push(c);
+}
+
+/* SHAPES */
+const shapes=[
+  [[0,0]],
+  [[0,0],[1,0]],
+  [[0,0],[0,1]],
+  [[0,0],[1,0],[0,1]],
+  [[0,0],[1,0],[2,0]]
+];
+
+/* BLOCKS */
+function generateBlocks(){
+  blocksEl.innerHTML="";
+
+  for(let i=0;i<3;i++){
+    let shape=shapes[Math.floor(Math.random()*shapes.length)];
+
+    let div=document.createElement("div");
+    div.className="block";
+
+    shape.forEach(p=>{
+      let d=document.createElement("div");
+      d.style.gridColumn=p[0]+1;
+      d.style.gridRow=p[1]+1;
+      div.appendChild(d);
+    });
+
+    div.onpointerdown=(e)=>{
+      dragging=div;
+      shapeData=shape;
+      div.classList.add("dragging");
+    };
+
+    blocksEl.appendChild(div);
+  }
+}
+
+generateBlocks();
+
+/* MOVE */
+document.addEventListener("pointermove",(e)=>{
+  if(!dragging) return;
+  dragging.style.left=e.clientX+"px";
+  dragging.style.top=e.clientY+"px";
+});
+
+/* DROP */
+document.addEventListener("pointerup",(e)=>{
+  if(!dragging) return;
+
+  let rect=gridEl.getBoundingClientRect();
+  let size=rect.width/8;
+
+  let x=Math.floor((e.clientX-rect.left)/size);
+  let y=Math.floor((e.clientY-rect.top)/size);
+
+  let ok=place(x,y);
+
+  if(ok){
+    dragging.remove();
+    generateBlocks();
+  }else{
+    dragging.classList.remove("dragging");
+    dragging.style.left="";
+    dragging.style.top="";
+  }
+
+  dragging=null;
+});
+
+/* PLACE */
+function place(baseX,baseY){
+
+  let can=shapeData.every(p=>{
+    let x=baseX+p[0];
+    let y=baseY+p[1];
+
+    if(x<0||y<0||x>=8||y>=8) return false;
+
+    return !grid[y*8+x].classList.contains("filled");
+  });
+
+  if(!can) return false;
+
+  shapeData.forEach(p=>{
+    let x=baseX+p[0];
+    let y=baseY+p[1];
+    grid[y*8+x].classList.add("filled");
+  });
+
+  score += Math.floor(Math.random()*400)+100;
+  scoreEl.innerText="Score: "+score;
+
+  checkScoreWin(); // 🔥 NEW RULE
+  return true;
+}
+
+/* 🔥 WIN BY SCORE 8000 */
+function checkScoreWin(){
+  if(score >= 8000){
+    showLetter();
+  }
+}
+
+/* SHOW LETTER */
+function showLetter(){
+  letter.classList.add("show");
+}
+
+/* BACK */
+function goBack(){
+  window.location.href="index.html";
+}
+
+/* MUSIC START (ANDROID FIX) */
+document.body.addEventListener("click",()=>{
+  bgm.play().catch(()=>{});
+},{once:true});
+</script>
+
+</body>
+</html>

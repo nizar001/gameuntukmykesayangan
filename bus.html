@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Bus GTA NOS 🚌🔥</title>
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  overflow:hidden;
+  font-family:sans-serif;
+  background:#111;
+  touch-action:none;
+}
+
+/* ROAD */
+#road{
+  position:absolute;
+  width:100%;
+  height:100vh;
+  background:#2b2b2b;
+  overflow:hidden;
+}
+
+/* ROAD LINE */
+.line{
+  position:absolute;
+  width:8px;
+  height:80px;
+  background:white;
+  left:50%;
+  transform:translateX(-50%);
+  animation:move 0.7s linear infinite;
+}
+
+@keyframes move{
+  from{top:-100px;}
+  to{top:100vh;}
+}
+
+/* BUS */
+#bus{
+  position:absolute;
+  bottom:120px;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:48px;
+  transition:0.1s;
+}
+
+/* CAR */
+.car{
+  position:absolute;
+  font-size:38px;
+}
+
+/* HUD */
+#hud{
+  position:absolute;
+  top:10px;
+  width:100%;
+  text-align:center;
+  color:white;
+  z-index:10;
+  font-size:16px;
+}
+
+/* CONTROLS */
+#controls{
+  position:absolute;
+  bottom:20px;
+  width:100%;
+  display:flex;
+  justify-content:space-around;
+  padding:0 10px;
+}
+
+button{
+  width:30%;
+  padding:15px;
+  border:none;
+  border-radius:12px;
+  background:#ffcc00;
+  font-size:16px;
+}
+
+/* BOOST EFFECT */
+.boost{
+  filter: blur(1px);
+}
+
+/* WIN SCREEN */
+#winScreen{
+  display:none;
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:100vh;
+  background:rgba(0,0,0,0.85);
+  color:white;
+  z-index:999;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  text-align:center;
+}
+</style>
+
+</head>
+
+<body>
+
+<div id="road">
+
+  <div id="hud">
+    🚌 selamatt berkendaraa aayyy<br>
+    Score: <span id="score">0</span> / 1000
+  </div>
+
+  <div class="line"></div>
+
+  <div id="bus">🚌</div>
+
+</div>
+
+<!-- CONTROLS -->
+
+<div id="controls">
+  <button onclick="left()">⬅</button>
+  <button onclick="gas()">⛽ NOS</button>
+  <button onclick="right()">➡</button>
+</div>
+
+<!-- WIN SCREEN -->
+
+<div id="winScreen">
+  <h1>🏆 YOU WIN!</h1>
+  <p>Kamu berhasil mencapai 1000 score</p>
+
+<button onclick="goBack()" style="
+ margin-top:20px;
+ padding:15px 25px;
+ border:none;
+ border-radius:10px;
+ background:#ffcc00;
+ font-size:16px;
+">
+⬅ Back ke Index </button>
+
+</div>
+
+<script>
+
+let bus = document.getElementById("bus");
+let road = document.getElementById("road");
+let scoreEl = document.getElementById("score");
+
+let x = 50;
+let score = 0;
+
+let speed = 1;
+let boostActive = false;
+let cars = [];
+
+/* SCORE LOOP */
+setInterval(()=>{
+  if(score >= 1000){
+    document.getElementById("winScreen").style.display = "flex";
+    return;
+  }
+
+  score += Math.floor(1 * speed);
+  scoreEl.innerText = score;
+
+},200);
+
+/* CONTROL */
+function left(){
+  x -= 6;
+  if(x < 10) x = 10;
+  bus.style.left = x + "%";
+}
+
+function right(){
+  x += 6;
+  if(x > 90) x = 90;
+  bus.style.left = x + "%";
+}
+
+/* 🚀 NOS BOOST */
+function gas(){
+
+  if(boostActive) return;
+  boostActive = true;
+
+  speed = 5;
+
+  bus.style.transform = "scale(1.3)";
+  road.classList.add("boost");
+
+  setTimeout(()=>{
+    speed = 1;
+    boostActive = false;
+    bus.style.transform = "scale(1)";
+    road.classList.remove("boost");
+  },3000);
+}
+
+/* 🚗 SPAWN CAR */
+function spawnCar(){
+
+  let car = document.createElement("div");
+  car.className="car";
+  car.innerText="🚗";
+
+  car.style.left = Math.random()*85 + "%";
+  car.style.top = "-60px";
+
+  road.appendChild(car);
+  cars.push(car);
+
+  let move = setInterval(()=>{
+
+    let busRect = bus.getBoundingClientRect();
+    let carRect = car.getBoundingClientRect();
+
+    car.style.top = car.offsetTop + (4 + speed) + "px";
+
+    /* 💥 COLLISION */
+    if(
+      carRect.left < busRect.right &&
+      carRect.right > busRect.left &&
+      carRect.top < busRect.bottom &&
+      carRect.bottom > busRect.top
+    ){
+      clearInterval(move);
+      resetGame();
+    }
+
+    if(car.offsetTop > window.innerHeight){
+      car.remove();
+      cars = cars.filter(c=>c!==car);
+      clearInterval(move);
+    }
+
+  },30);
+}
+
+setInterval(spawnCar,1100);
+
+/* RESET GAME */
+function resetGame(){
+  score = 0;
+  x = 50;
+  speed = 1;
+  boostActive = false;
+
+  scoreEl.innerText = score;
+  bus.style.left = "50%";
+  bus.style.transform = "scale(1)";
+  road.classList.remove("boost");
+
+  cars.forEach(c=>c.remove());
+  cars = [];
+}
+
+/* BACK */
+function goBack(){
+  window.location.href = "index.html";
+}
+
+</script>
+
+</body>
+</html>

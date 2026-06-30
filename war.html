@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Galaxy Love Shooter 💖</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+  overflow:hidden;
+  background-image: url(—Pngtree—a\ colorful\ sky\ with\ clouds_15792164.jpg);
+  font-family:sans-serif;
+}
+
+/* HUD */
+#hud{
+  position:absolute;
+  top:10px;
+  width:100%;
+  text-align:center;
+  color:white;
+  z-index:10;
+  font-size:14px;
+}
+
+/* PLAYER */
+#player{
+  position:absolute;
+  bottom:140px;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:42px;
+}
+
+/* BULLET */
+.bullet{
+  position:absolute;
+  font-size:18px;
+  pointer-events:none;
+}
+
+/* ENEMY */
+.enemy{
+  position:absolute;
+  font-size:30px;
+}
+
+/* CONTROLS */
+#controls{
+  position:fixed;
+  bottom:0;
+  left:0;
+  width:100%;
+  height:90px;
+  display:flex;
+  justify-content:space-around;
+  align-items:center;
+  background:rgba(0,0,0,0.5);
+  z-index:999;
+}
+
+button{
+  width:28%;
+  padding:14px;
+  border:none;
+  border-radius:12px;
+  background:#ff66cc;
+  font-size:16px;
+  color:white;
+}
+
+/* WIN */
+#winBtn{
+  display:none;
+  position:absolute;
+  top:45%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  z-index:999;
+  padding:15px 25px;
+  border:none;
+  border-radius:10px;
+  background:#ffcc00;
+  font-size:16px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="hud">
+💖 tembak itu sayanggg<br>
+Kill: <span id="score">0</span> / 50
+</div>
+
+<div id="player">✈️</div>
+
+<!-- CONTROLS -->
+<div id="controls">
+<button onmousedown="startLeft()" onmouseup="stopMove()">⬅</button>
+<button onclick="shoot()">💖 TEMBAK</button>
+<button onmousedown="startRight()" onmouseup="stopMove()">➡</button>
+</div>
+
+<button id="winBtn" onclick="back()">⬅ Back ke Index</button>
+
+<script>
+
+let player = document.getElementById("player");
+let scoreEl = document.getElementById("score");
+let winBtn = document.getElementById("winBtn");
+
+let px = 50;
+let kill = 0;
+let gameOver = false;
+let moveInterval;
+
+/* MOVE SMOOTH */
+function startLeft(){
+clearInterval(moveInterval);
+moveInterval = setInterval(()=>{
+px -= 2;
+if(px < 5) px = 5;
+player.style.left = px + "%";
+},10);
+}
+
+function startRight(){
+clearInterval(moveInterval);
+moveInterval = setInterval(()=>{
+px += 2;
+if(px > 95) px = 95;
+player.style.left = px + "%";
+},10);
+}
+
+function stopMove(){
+clearInterval(moveInterval);
+}
+
+/* SHOOT FIX POSITION */
+function shoot(){
+
+if(gameOver) return;
+
+let bullet = document.createElement("div");
+bullet.className = "bullet";
+bullet.innerText = "💖";
+
+let rect = player.getBoundingClientRect();
+
+bullet.style.left = (rect.left + rect.width/2 - 5) + "px";
+bullet.style.top = (rect.top - 20) + "px";
+
+document.body.appendChild(bullet);
+
+let move = setInterval(()=>{
+
+bullet.style.top = bullet.offsetTop - 10 + "px";
+
+let enemies = document.querySelectorAll(".enemy");
+
+enemies.forEach(enemy=>{
+
+let b = bullet.getBoundingClientRect();
+let e = enemy.getBoundingClientRect();
+
+if(
+b.left < e.right &&
+b.right > e.left &&
+b.top < e.bottom &&
+b.bottom > e.top
+){
+enemy.remove();
+bullet.remove();
+
+kill++;
+scoreEl.innerText = kill;
+
+clearInterval(move);
+
+if(kill >= 50){
+win();
+}
+}
+
+});
+
+if(bullet.offsetTop < -50){
+bullet.remove();
+clearInterval(move);
+}
+
+},25);
+}
+
+/* ENEMY */
+function spawnEnemy(){
+
+if(gameOver) return;
+
+let enemy = document.createElement("div");
+enemy.className = "enemy";
+enemy.innerText = "🛸";
+
+enemy.style.left = Math.random()*90 + "%";
+enemy.style.top = "-50px";
+
+document.body.appendChild(enemy);
+
+let move = setInterval(()=>{
+
+enemy.style.top = enemy.offsetTop + 4 + "px";
+
+if(enemy.offsetTop > window.innerHeight){
+enemy.remove();
+clearInterval(move);
+}
+
+},30);
+}
+
+setInterval(spawnEnemy,800);
+
+/* WIN */
+function win(){
+gameOver = true;
+winBtn.style.display = "block";
+}
+
+/* BACK */
+function back(){
+window.location.href = "index.html";
+}
+
+</script>
+
+</body>
+</html>
